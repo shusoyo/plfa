@@ -277,3 +277,31 @@ day 3:
 ∸-+-assoc zero n p rewrite 0∸n≡0 n | 0∸n≡0 p | 0∸n≡0 (n + p) = refl
 ∸-+-assoc (suc m) zero p = refl
 ∸-+-assoc (suc m) (suc n) p rewrite ∸-+-assoc m n p = refl
+
+--- Exercise +*^ (stretch)
+^-distribˡ-+-* : ∀ (m n p : ℕ) →  m ^ (n + p) ≡ (m ^ n) * (m ^ p) 
+^-distribˡ-+-* m zero p rewrite +-identityʳ (m ^ p) = refl
+^-distribˡ-+-* m (suc n) p 
+  rewrite ^-distribˡ-+-* m n p 
+    | sym (*-assoc m (m ^ n) (m ^ p))
+  = refl
+
+^-distribʳ-* : ∀ (m n p : ℕ) → (m * n) ^ p ≡ (m ^ p) * (n ^ p)
+^-distribʳ-* m n zero = refl
+^-distribʳ-* m n (suc p) 
+  rewrite ^-distribʳ-* m n p
+    | *-assoc m (m ^ p) (n * (n ^ p))
+    | sym (*-assoc (m ^ p) n (n ^ p))
+    | *-comm (m ^ p) n
+    | *-assoc n (m ^ p) (n ^ p)
+    | *-assoc m n (m ^ p * n ^ p)
+  = refl
+  
+^-*-assoc : ∀ (m n p : ℕ) → (m ^ n) ^ p ≡ m ^ (n * p)
+^-*-assoc m n zero rewrite *-comm n zero = refl
+^-*-assoc m n (suc p)
+  rewrite *-comm n (suc p) 
+    | ^-*-assoc m n p
+    | ^-distribˡ-+-* m n (p * n)
+    | *-comm p n
+  = refl
