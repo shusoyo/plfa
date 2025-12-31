@@ -1,0 +1,304 @@
+module plfa.lf.Relations where
+
+import Relation.Binary.PropositionalEquality as Eq
+open Eq using (_≡_; refl; cong)
+open import Data.Nat using (ℕ; zero; suc; _+_; _*_)
+open import Data.Nat.Properties using (+-comm; +-identityʳ; *-comm)
+
+data _≤_ : ℕ → ℕ → Set where
+
+  z≤n : ∀ {n : ℕ}
+      --------
+    → zero ≤ n
+
+  s≤s : ∀ {m n : ℕ}
+    → m ≤ n
+      -------------
+    → suc m ≤ suc n
+
+infix 4 _≤_
+
+inv-s≤s : ∀ {m n : ℕ}
+  → suc m ≤ suc n
+    -------------
+  → m ≤ n
+inv-s≤s (s≤s m≤n) = m≤n
+
+inv-z≤n : ∀ {m : ℕ}
+  → m ≤ zero
+    --------
+  → m ≡ zero
+inv-z≤n z≤n = refl
+
+--- Reflexivity
+≤-refl : ∀ {n : ℕ}
+    -----
+  → n ≤ n
+≤-refl {zero} = z≤n
+≤-refl {suc n} = s≤s ≤-refl
+
+≤-refl' : ∀ (n : ℕ) → n ≤ n
+≤-refl' zero = z≤n
+≤-refl' (suc n) = s≤s (≤-refl' n)
+
+--- Transitivity
+≤-trans : ∀ {m n p : ℕ}
+  → m ≤ n
+  → n ≤ p
+    -----
+  → m ≤ p
+≤-trans z≤n       _          =  z≤n
+≤-trans (s≤s m≤n) (s≤s n≤p)  =  s≤s (≤-trans m≤n n≤p)
+
+≤-trans′ : ∀ (m n p : ℕ)
+  → m ≤ n
+  → n ≤ p
+    -----
+  → m ≤ p
+≤-trans′ zero    _       _       z≤n       _          =  z≤n
+≤-trans′ (suc m) (suc n) (suc p) (s≤s m≤n) (s≤s n≤p)  =  s≤s (≤-trans′ m n p m≤n n≤p)
+
+≤-antisym : ∀ {m n : ℕ}
+  → m ≤ n
+  → n ≤ m
+    -----
+  → m ≡ n
+≤-antisym z≤n       z≤n        =  refl
+≤-antisym (s≤s m≤n) (s≤s n≤m)  =  cong suc (≤-antisym m≤n n≤m)
+
+--- Total
+data Total (m n : ℕ) : Set where
+
+  forward :
+      m ≤ n
+      ---------
+    → Total m n
+
+  flipped :
+      n ≤ m
+      ---------
+    → Total m n
+
+data Total′ : ℕ → ℕ → Set where
+
+  forward′ : ∀ {m n : ℕ}
+    → m ≤ n
+      ----------
+    → Total′ m n
+
+  flipped′ : ∀ {m n : ℕ}
+    → n ≤ m
+      ----------
+    → Total′ m n
+
+≤-total : ∀ (m n : ℕ) → Total m n
+≤-total zero    n                         =  forward z≤n
+≤-total (suc m) zero                      =  flipped z≤n
+≤-total (suc m) (suc n) with ≤-total m n
+...                        | forward m≤n  =  forward (s≤s m≤n)
+...                        | flipped n≤m  =  flipped (s≤s n≤m)
+
+≤-total′ : ∀ (m n : ℕ) → Total m n
+≤-total′ zero    n        =  forward z≤n
+≤-total′ (suc m) zero     =  flipped z≤n
+≤-total′ (suc m) (suc n)  =  helper (≤-total′ m n)
+  where
+  helper : Total m n → Total (suc m) (suc n)
+  helper (forward m≤n)  =  forward (s≤s m≤n)
+  helper (flipped n≤m)  =  flipped (s≤s n≤m)
+
+--- Monotonicity
++-monoʳ-≤ : ∀ (n p q : ℕ)
+  → p ≤ q
+    -------------
+  → n + p ≤ n + q
++-monoʳ-≤ zero    p q p≤q  =  p≤q
++-monoʳ-≤ (suc n) p q p≤q  =  s≤s (+-monoʳ-≤ n p q p≤q)
+
++-monoˡ-≤ : ∀ (m n p : ℕ)
+  → m ≤ n
+    -------------
+  → m + p ≤ n + p
++-monoˡ-≤ m n p m≤n  rewrite +-comm m p | +-comm n p  = +-monoʳ-≤ p m n m≤n
+
++-mono-≤ : ∀ (m n p q : ℕ)
+  → m ≤ n
+  → p ≤ q
+    -------------
+  → m + p ≤ n + q
++-mono-≤ m n p q m≤n p≤q  =  ≤-trans (+-monoˡ-≤ m n p m≤n) (+-monoʳ-≤ n p q p≤q)
+
+--- Exercise *-mono-≤
+*-monoʳ-≤ : ∀ (n p q : ℕ)
+  → p ≤ q
+    -------------
+  → n * p ≤ n * q
+*-monoʳ-≤ zero    p q p≤q  =  ≤-refl
+*-monoʳ-≤ (suc n) p q p≤q  =  ≤-trans ineq1 ineq2  where
+  ineq1 = (+-monoˡ-≤ p q (n * p) p≤q) 
+  ineq2 = (+-monoʳ-≤ q (n * p) (n * q) (*-monoʳ-≤ n p q p≤q))
+
+*-monoˡ-≤ : ∀ (m n p : ℕ)
+  → m ≤ n
+    -------------
+  → m * p ≤ n * p
+*-monoˡ-≤ m n p m≤n  rewrite *-comm m p | *-comm n p  =  *-monoʳ-≤ p m n m≤n
+
+*-mono-≤ : ∀ (m n p q : ℕ)
+  → m ≤ n
+  → p ≤ q
+    -------------
+  → m * p ≤ n * q
+*-mono-≤ m n p q m≤n p≤q  =  ≤-trans (*-monoʳ-≤ m p q p≤q) (*-monoˡ-≤ m n q m≤n)
+
+
+--- Strict inequality
+infix 4 _<_
+
+data _<_ : ℕ → ℕ → Set where
+
+  z<s : ∀ {n : ℕ}
+      ------------
+    → zero < suc n
+
+  s<s : ∀ {m n : ℕ}
+    → m < n
+      -------------
+    → suc m < suc n
+
+--- Exercise 
+
+<-trans : ∀ {m n p : ℕ} 
+  → m < n
+  → n < p
+    -----
+  → m < p
+<-trans z<s (s<s n<p) = z<s
+<-trans (s<s m<n) (s<s n<p) = s<s (<-trans m<n n<p)
+
+--- trichotomy
+data Trichotomy (m n : ℕ) :  Set where
+  forward :
+      m < n  
+      --------------
+    → Trichotomy m n
+  
+  equality :
+      m ≡ n
+      --------------
+    → Trichotomy m n
+  
+  flipped :
+      n < m
+      --------------
+    → Trichotomy m n
+
+<-trichotomy : ∀ (m n : ℕ) → Trichotomy m n
+<-trichotomy zero zero                              =  equality refl
+<-trichotomy zero (suc n)                           =  forward z<s
+<-trichotomy (suc m) zero                           =  flipped z<s
+<-trichotomy (suc m) (suc n) with <-trichotomy m n
+...                                 | forward  m<n  =  forward  (s<s m<n)
+...                                 | equality m≡n  =  equality (cong suc m≡n)
+...                                 | flipped  n<m  =  flipped  (s<s n<m)
+
+
++-monoʳ-< : ∀ (n p q : ℕ)
+  → p < q
+    ------------- 
+  → n + p < n + q
++-monoʳ-< zero    p q p<q  =  p<q
++-monoʳ-< (suc n) p q p<q  =  s<s (+-monoʳ-< n p q p<q)
+
++-monoˡ-< : ∀ (m n p : ℕ)
+  → m < n
+    -------------
+  → m + p < n + p
++-monoˡ-< m n p m<n  rewrite +-comm m p | +-comm n p  =  +-monoʳ-< p m n m<n
+
++-mono-< : ∀ (m n p q : ℕ)
+  → m < n
+  → p < q
+    ------------- 
+  → m + p < n + q
++-mono-< m n p q m<n p<q  =  <-trans (+-monoʳ-< m p q p<q) (+-monoˡ-< m n q m<n)
+
+≤-iff-< : ∀ (m n : ℕ) 
+  → suc m ≤ n
+    --------- 
+  → m < n
+≤-iff-< zero (suc n) _  =  z<s
+≤-iff-< (suc m) (suc n) (s≤s sucm≤n)  =  s<s (≤-iff-< m n sucm≤n)
+
+≤-iff-inv-< : ∀ (m n : ℕ) 
+  → m < n
+    --------- 
+  → suc m ≤ n
+≤-iff-inv-< zero (suc n) _  =  s≤s z≤n
+≤-iff-inv-< (suc m) (suc n) (s<s m<n) = s≤s (≤-iff-inv-< m n m<n)
+
+
+<-suc : ∀ {m n : ℕ}
+  → suc m < n
+    ---------
+  → m < n
+<-suc {zero}  {suc n} h       = z<s
+<-suc {suc m} {suc n} (s<s h) = s<s (<-suc h)
+
+<-trans-revisited : ∀ (m n p : ℕ)
+  → m < n
+  → n < p
+    -----
+  → m < p
+<-trans-revisited m n p h1 h2 = 
+  <-suc (≤-iff-< (suc m) p ((≤-trans (s≤s ineq1) ineq2))) 
+  where
+  ineq1 = ≤-iff-inv-< m n h1
+  ineq2 = ≤-iff-inv-< n p h2
+  
+--- Even and odd
+data even : ℕ → Set
+data odd  : ℕ → Set
+
+data even where
+
+  zero :
+      ---------
+      even zero
+
+  suc  : ∀ {n : ℕ}
+    → odd n
+      ------------
+    → even (suc n)
+
+data odd where
+
+  suc  : ∀ {n : ℕ}
+    → even n
+      -----------
+    → odd (suc n)
+
+e+e≡e : ∀ {m n : ℕ}
+  → even m
+  → even n
+    ------------
+  → even (m + n)
+
+o+e≡o : ∀ {m n : ℕ}
+  → odd m
+  → even n
+    -----------
+  → odd (m + n)
+
+e+e≡e zero     en  =  en
+e+e≡e (suc om) en  =  suc (o+e≡o om en)
+
+o+e≡o (suc em) en  =  suc (e+e≡e em en)
+
+--- Exercise o+o≡e 
+o+o≡e : ∀ (m n : ℕ)
+  → odd m
+  → odd n
+    ------------
+  → even (m + n)
+o+o≡e (suc a) b (suc em) n rewrite +-comm a b = suc (o+e≡o n em)
