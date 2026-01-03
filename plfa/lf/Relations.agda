@@ -301,4 +301,11 @@ o+o≡e : ∀ (m n : ℕ)
   → odd n
     ------------
   → even (m + n)
-o+o≡e (suc a) b (suc em) n rewrite +-comm a b = suc (o+e≡o n em)
+o+o≡e (suc a) b (suc em) n  rewrite +-comm a b  =  suc (o+e≡o n em)
+
+_ : 1 ≤ 1
+_ = s≤s (z≤n)
+
+eq-le : ∀ {m n : ℕ} → m ≡ n → m ≤ n
+eq-le {zero} {n} eq = z≤n
+eq-le {suc m} {suc n} refl = s≤s (eq-le refl)
