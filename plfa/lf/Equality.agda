@@ -251,7 +251,7 @@ even-comm″ : ∀ (m n : ℕ)
   → even (m + n)
     ------------
   → even (n + m)
-even-comm″ m n  =  subst even (+-comm m n)
+even-comm″ m n  =  subst even (+-comm m n) -- Don't need to math `even (m + n)` in explicit way because of currying.
 
 --- Leibniz equality
 _≐_ : ∀ {A : Set} (x y : A) → Set₁
@@ -302,7 +302,6 @@ sym-≐ {A} {x} {y} x≐y P  =  Qy
     Qy = x≐y Q Qx
 
 --- Universe polymorphism
-
 open import Level using (Level; _⊔_) renaming (zero to lzero; suc to lsuc)
 
 data _≡′_ {ℓ : Level} {A : Set ℓ} (x : A) : A → Set ℓ where
