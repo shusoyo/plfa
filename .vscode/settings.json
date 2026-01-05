@@ -1,4 +1,4 @@
 {
-  "editor.fontFamily": "'JuliaMono', 'FiraCode Nerd Font Mono', monospace",
+  "editor.fontFamily": "'JuliaMono', 'Fira Code', monospace",
   "editor.fontLigatures": true
 }
