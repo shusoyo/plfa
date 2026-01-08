@@ -108,25 +108,25 @@ data Total′ : ℕ → ℕ → Set where
   helper (flipped n≤m)  =  flipped (s≤s n≤m)
 
 --- Monotonicity
-+-monoʳ-≤ : ∀ (n p q : ℕ)
++-monoʳ-≤ : ∀ {n p q : ℕ}
   → p ≤ q
     -------------
   → n + p ≤ n + q
-+-monoʳ-≤ zero    p q p≤q  =  p≤q
-+-monoʳ-≤ (suc n) p q p≤q  =  s≤s (+-monoʳ-≤ n p q p≤q)
++-monoʳ-≤ {zero}  p≤q  =  p≤q
++-monoʳ-≤ {suc n} p≤q  =  s≤s (+-monoʳ-≤ p≤q)
 
-+-monoˡ-≤ : ∀ (m n p : ℕ)
++-monoˡ-≤ : ∀ {m n p : ℕ}
   → m ≤ n
     -------------
   → m + p ≤ n + p
-+-monoˡ-≤ m n p m≤n  rewrite +-comm m p | +-comm n p  = +-monoʳ-≤ p m n m≤n
++-monoˡ-≤ {m} {n} {p} m≤n  rewrite +-comm m p | +-comm n p  = +-monoʳ-≤  m≤n
 
 +-mono-≤ : ∀ (m n p q : ℕ)
   → m ≤ n
   → p ≤ q
     -------------
   → m + p ≤ n + q
-+-mono-≤ m n p q m≤n p≤q  =  ≤-trans (+-monoˡ-≤ m n p m≤n) (+-monoʳ-≤ n p q p≤q)
++-mono-≤ m n p q m≤n p≤q  =  ≤-trans (+-monoˡ-≤  m≤n) (+-monoʳ-≤  p≤q)
 
 --- Exercise *-mono-≤
 *-monoʳ-≤ : ∀ (n p q : ℕ)
@@ -135,8 +135,8 @@ data Total′ : ℕ → ℕ → Set where
   → n * p ≤ n * q
 *-monoʳ-≤ zero    p q p≤q  =  ≤-refl
 *-monoʳ-≤ (suc n) p q p≤q  =  ≤-trans ineq1 ineq2  where
-  ineq1 = (+-monoˡ-≤ p q (n * p) p≤q) 
-  ineq2 = (+-monoʳ-≤ q (n * p) (n * q) (*-monoʳ-≤ n p q p≤q))
+  ineq1 = (+-monoˡ-≤ p≤q) 
+  ineq2 = (+-monoʳ-≤ (*-monoʳ-≤ n p q p≤q))
 
 *-monoˡ-≤ : ∀ (m n p : ℕ)
   → m ≤ n

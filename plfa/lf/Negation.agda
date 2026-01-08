@@ -169,5 +169,5 @@ stable-stable : ∀ {A B : Set}
   → Stable A
   → Stable B
   → Stable (A × B) 
-stable-stable sa sb ¬¬ab = ⟨ sa (λ z → ¬¬ab (λ z₁ → z (z₁ .proj₁))) ,
+stable-stable sa sb ¬¬ab = ⟨ sa (λ z → ¬¬ab (λ (⟨ proj₁ , _ ⟩) → z proj₁)) ,
   sb (λ z → ¬¬ab (λ z₁ → z (z₁ .proj₂))) ⟩
