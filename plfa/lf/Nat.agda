@@ -12,8 +12,8 @@ data ℕ : Set where
 
 --- Addition
 _+_ : ℕ → ℕ → ℕ
-zero + n = n
-(suc m) + n = suc (m + n)
+zero    + n  =  n
+(suc m) + n  =  suc (m + n)
 
 --- Multiplication
 _*_ : ℕ → ℕ → ℕ

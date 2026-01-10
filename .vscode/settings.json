@@ -1,4 +1,4 @@
 {
-  "editor.fontFamily": "'JuliaMono', 'Fira Code', monospace",
+  "editor.fontFamily": "'Fira Code','JuliaMono',  monospace",
   "editor.fontLigatures": true
 }
