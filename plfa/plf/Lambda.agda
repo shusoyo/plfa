@@ -142,21 +142,22 @@ _ = refl
 _ : (ƛ "y" ⇒ ` "y") [ "x" := `zero ] ≡ ƛ "y" ⇒ ` "y"
 _ = refl
 
-
-judge : ∀ {A : Set} → Dec A → Term → Term → Term
-judge (yes _) _ t = t
-judge (no  _) t _ = t
+if_then_else_ : ∀ {A : Set} → Dec A → Term → Term → Term
+if_then_else_ (yes _) t _ = t
+if_then_else_ (no  _) _ t = t
 
 _[_:=_]′ : Term → Id → Term → Term
 (`zero)                        [ y := V ]′  =  `zero
 (`suc M)                       [ y := V ]′  =  `suc M [ y := V ]′
 (L · M)                        [ y := V ]′  =  L [ y := V ]′ · M [ y := V ]′
-(` x)                          [ y := V ]′  =  judge (x ≟ y) V         (` x)
-(ƛ x ⇒ N)                      [ y := V ]′  =  judge (x ≟ y) (ƛ x ⇒ N) (ƛ x ⇒ N [ y := V ]′)
-(μ x ⇒ N)                      [ y := V ]′  =  judge (x ≟ y) (μ x ⇒ N) (μ x ⇒ N [ y := V ]′)
+(` x)                          [ y := V ]′  =  if (x ≟ y) then V else  (` x)
+(ƛ x ⇒ N)                      [ y := V ]′  =  if (x ≟ y) then (ƛ x ⇒ N) else (ƛ x ⇒ N [ y := V ]′)
+(μ x ⇒ N)                      [ y := V ]′  =  if (x ≟ y) then (μ x ⇒ N) else (μ x ⇒ N [ y := V ]′)
 (case L [zero⇒ M |suc x ⇒ N ]) [ y := V ]′  = 
-  judge (x ≟ y) (case L [ y := V ]′ [zero⇒ M [ y := V ]′ |suc x ⇒ N ])
-                (case L [ y := V ]′ [zero⇒ M [ y := V ]′ |suc x ⇒ N [ y := V ]′ ])
+  if (x ≟ y) then
+    (case L [ y := V ]′ [zero⇒ M [ y := V ]′ |suc x ⇒ N ])
+  else
+    (case L [ y := V ]′ [zero⇒ M [ y := V ]′ |suc x ⇒ N [ y := V ]′ ])
 
 --- reduction
 infix 4 _—→_
